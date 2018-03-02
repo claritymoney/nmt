@@ -35,9 +35,11 @@ def get_infer_iterator(src_dataset,
                        src_vocab_table,
                        batch_size,
                        eos,
-                       src_max_len=None):
+                       src_max_len=None,
+                       delimiter=' '):
   src_eos_id = tf.cast(src_vocab_table.lookup(tf.constant(eos)), tf.int32)
-  src_dataset = src_dataset.map(lambda src: tf.string_split([src]).values)
+  src_dataset = src_dataset.map(lambda src:
+                                tf.string_split([src], delimiter=delimiter).values)
 
   if src_max_len:
     src_dataset = src_dataset.map(lambda src: src[:src_max_len])
@@ -91,7 +93,8 @@ def get_iterator(src_dataset,
                  skip_count=None,
                  num_shards=1,
                  shard_index=0,
-                 reshuffle_each_iteration=True):
+                 reshuffle_each_iteration=True,
+                 delimiter=' '):
   if not output_buffer_size:
     output_buffer_size = batch_size * 1000
   src_eos_id = tf.cast(src_vocab_table.lookup(tf.constant(eos)), tf.int32)
@@ -109,7 +112,8 @@ def get_iterator(src_dataset,
 
   src_tgt_dataset = src_tgt_dataset.map(
       lambda src, tgt: (
-          tf.string_split([src]).values, tf.string_split([tgt]).values),
+          tf.string_split([src], delimiter=delimiter).values,
+          tf.string_split([tgt], delimiter=delimiter).values),
       num_parallel_calls=num_parallel_calls).prefetch(output_buffer_size)
 
   # Filter zero length input sequences.
