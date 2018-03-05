@@ -148,6 +148,7 @@ def add_arguments(parser):
                       help="Store log/model files.")
 
   # Vocab
+  parser.add_argument("--vocab_file_path", type=str, default=None, help="File path")
   parser.add_argument("--vocab_prefix", type=str, default=None, help="""\
       Vocab prefix, expect files with src/tgt suffixes.\
       """)
@@ -351,6 +352,7 @@ def create_hparams(flags):
       eos=flags.eos if flags.eos else vocab_utils.EOS,
       subword_option=flags.subword_option,
       check_special_token=flags.check_special_token,
+      vocab_file_path=flags.vocab_file_path,
 
       # Misc
       forget_bias=flags.forget_bias,
@@ -425,7 +427,10 @@ def extend_hparams(hparams):
 
   ## Vocab
   # Get vocab file names first
-  if hparams.vocab_prefix:
+  # if path is supplied, take that.
+  if hparams.vocab_file_path:
+    src_vocab_file = hparams.vocab_file_path
+  elif hparams.vocab_prefix:
     src_vocab_file = hparams.vocab_prefix + "." + hparams.src
     tgt_vocab_file = hparams.vocab_prefix + "." + hparams.tgt
   else:
